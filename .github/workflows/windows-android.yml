@@ -1,9 +1,12 @@
-name: Build Qv2ray deps for Android / Windows
+name: Build Qxray deps for Android / Windows
 
 on:
+  workflow_dispatch:
+  release:
+    types: [published]
   push:
-  schedule:
-      - cron: '0 0 */2 * *'
+    branches:
+      - master
       
 jobs:
   build:
@@ -35,6 +38,9 @@ jobs:
       run: |
         set +e
         git clone https://github.com/microsoft/vcpkg
+        cd vcpkg
+        git checkout 3efce9a5c9d53ac486693bc52fd97a98ae4be81c
+        cd ..
         ./vcpkg/bootstrap-vcpkg.sh
 
     - name: Prepare Android protoc and grpc_cpp_plugin
@@ -74,12 +80,6 @@ jobs:
         ./vcpkg/vcpkg export ${{ matrix.package }}:${{ matrix.arch }}-${{ matrix.os }} --output=${{ matrix.os }}-${{ matrix.arch }} --7zip
         cp ./vcpkg/${{ matrix.os }}-${{ matrix.arch }}.7z ./${{ matrix.package }}-${{ matrix.arch }}-${{ matrix.os }}.7z
         
-    - name: Upload Artifact
-      uses: actions/upload-artifact@master
-      with:
-        name: ${{ matrix.package }}-${{ matrix.arch }}-${{ matrix.os }}.7z
-        path: ${{ matrix.package }}-${{ matrix.arch }}-${{ matrix.os }}.7z
-        
     - name: Upload To Release
       uses: svenstaro/upload-release-action@v1-release
       with:
@@ -98,6 +98,9 @@ jobs:
       run: |
         set +e
         git clone https://github.com/microsoft/vcpkg
+        cd vcpkg
+        git checkout 3efce9a5c9d53ac486693bc52fd97a98ae4be81c
+        cd ..
         ./vcpkg/bootstrap-vcpkg.sh
 
     - name: Prepare gRPC
@@ -113,12 +116,6 @@ jobs:
         pathSource: ./vcpkg/installed/x64-linux/tools
         pathTarget: ./grpc-tools-linux.7z
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@master
-      with:
-        name: grpc-tools-linux.7z
-        path: grpc-tools-linux.7z
-        
     - name: Upload To Release
       uses: svenstaro/upload-release-action@v1-release
       with:
